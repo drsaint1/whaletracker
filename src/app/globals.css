@@ -263,6 +263,12 @@ main {
 .event-dot-swap { background: #00cec9; }
 .event-dot-mint { background: var(--green); }
 .event-dot-burn { background: var(--red); }
+.event-dot-storm { background: var(--gold); }
+
+.event-counter-highlight {
+  color: var(--gold);
+  font-weight: 600;
+}
 
 /* --- Charts --- */
 .charts-row {

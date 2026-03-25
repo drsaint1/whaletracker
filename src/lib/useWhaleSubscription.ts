@@ -262,6 +262,7 @@ export function useWhaleSubscription() {
         functionName: "transferCount",
       });
 
+      // Subscription 1: Transfer events chain-wide with ethCalls (transferCount) + onlyPushChanges
       const result = await withTimeout(sdk.subscribe({
         ethCalls: [
           {
@@ -270,8 +271,9 @@ export function useWhaleSubscription() {
           },
         ],
         topicOverrides: [TRANSFER_TOPIC],
+        onlyPushChanges: true,
         onData: async (message: any) => {
-          console.log("[WhaleTracker] somnia_watch event received");
+          console.log("[WhaleTracker] somnia_watch Transfer event received");
           const r = message?.params?.result ?? message?.result ?? message;
 
           const simResults = r?.simulationResults ?? [];
@@ -282,9 +284,9 @@ export function useWhaleSubscription() {
                 functionName: "transferCount",
                 data: simResults[0],
               });
-              console.log("[WhaleTracker] ethCalls simulationResults — on-chain transferCount:", count.toString());
+              console.log("[WhaleTracker] ethCalls transferCount:", count.toString());
             } catch (e) {
-              console.warn("[WhaleTracker] Could not decode simulationResults:", e);
+              console.warn("[WhaleTracker] Could not decode transferCount:", e);
             }
           }
 
@@ -301,7 +303,57 @@ export function useWhaleSubscription() {
       }), 8000);
       if (result instanceof Error) throw result;
 
-      console.log("[WhaleTracker] Connected via Somnia Reactivity SDK (somnia_watch + ethCalls)");
+      console.log("[WhaleTracker] Sub 1 connected: Transfer events + ethCalls + onlyPushChanges");
+
+      // Subscription 2: WhaleAlert events from WhaleHandler with stormCount ethCalls
+      try {
+        const stormCountCalldata = encodeFunctionData({
+          abi: WHALE_STORM_ABI,
+          functionName: "stormCount",
+        });
+
+        const result2 = await withTimeout(sdk.subscribe({
+          ethCalls: [
+            {
+              to: WHALE_STORM_ADDRESS,
+              data: stormCountCalldata,
+            },
+          ],
+          eventContractSources: [WHALE_HANDLER_ADDRESS],
+          topicOverrides: [WHALE_ALERT_TOPIC],
+          onData: (message: any) => {
+            console.log("[WhaleTracker] WhaleAlert event received from WhaleHandler");
+            setWhaleAlertCount((prev) => prev + 1);
+
+            const r = message?.params?.result ?? message?.result ?? message;
+            const simResults = r?.simulationResults ?? [];
+            if (simResults.length > 0) {
+              try {
+                const count = decodeFunctionResult({
+                  abi: WHALE_STORM_ABI,
+                  functionName: "stormCount",
+                  data: simResults[0],
+                });
+                console.log("[WhaleTracker] WhaleStorm stormCount:", count.toString());
+                setStormCount(Number(count));
+              } catch (e) {
+                console.warn("[WhaleTracker] Could not decode stormCount:", e);
+              }
+            }
+          },
+          onError: (err: Error) => {
+            console.warn("[WhaleTracker] WhaleAlert sub error:", err.message);
+          },
+        }), 8000);
+
+        if (!(result2 instanceof Error)) {
+          console.log("[WhaleTracker] Sub 2 connected: WhaleAlert + eventContractSources + stormCount ethCalls");
+          cleanupRef2.current = () => result2.unsubscribe?.();
+        }
+      } catch (e) {
+        console.warn("[WhaleTracker] WhaleAlert subscription failed (non-critical):", e);
+      }
+
       backoffRef.current = 1000;
       setStreamStatus("live");
       setConnectionMethod("reactivity-sdk");
@@ -396,9 +448,10 @@ export function useWhaleSubscription() {
     return () => {
       mountedRef.current = false;
       cleanupRef.current?.();
+      cleanupRef2.current?.();
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
     };
   }, [loadRecent, connect]);
 
-  return { transfers, streamStatus, totalAlerts, connectionMethod };
+  return { transfers, streamStatus, totalAlerts, connectionMethod, stormCount, whaleAlertCount };
 }

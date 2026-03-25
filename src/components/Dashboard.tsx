@@ -12,7 +12,7 @@ import { Leaderboard } from "./Leaderboard";
 import { WalletBar } from "./WalletBar";
 
 export function Dashboard() {
-  const { transfers, streamStatus, totalAlerts, connectionMethod } = useWhaleSubscription();
+  const { transfers, streamStatus, totalAlerts, connectionMethod, stormCount, whaleAlertCount } = useWhaleSubscription();
   const { summaries, currentWindow } = useSummaryData(transfers);
   const tps = useTps();
   const wallet = useWallet();
@@ -170,6 +170,12 @@ export function Dashboard() {
         </span>
         <span className="event-counter">
           <span className="event-dot event-dot-burn" />Burns {eventCounts.burn}
+        </span>
+        <span className="event-counter event-counter-highlight">
+          <span className="event-dot event-dot-storm" />Storms {stormCount}
+        </span>
+        <span className="event-counter">
+          WhaleAlerts {whaleAlertCount}
         </span>
         {currentWindow && (
           <span className="event-counter">
