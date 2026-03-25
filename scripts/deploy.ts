@@ -23,11 +23,23 @@ async function main() {
   const summaryAddress = await summary.getAddress();
   console.log("WhaleSummary deployed to:", summaryAddress);
 
+  console.log("\nDeploying WhaleStorm...");
+
+  // Storm threshold: 10000 tokens (triggers a "storm" when window volume crosses this)
+  const stormThreshold = ethers.parseEther("10000");
+  const WhaleStorm = await ethers.getContractFactory("WhaleStorm");
+  const storm = await WhaleStorm.deploy(handlerAddress, stormThreshold);
+  await storm.waitForDeployment();
+
+  const stormAddress = await storm.getAddress();
+  console.log("WhaleStorm deployed to:", stormAddress);
+
   console.log("\n--- Add these to your .env ---");
   console.log(`NEXT_PUBLIC_WHALE_HANDLER_ADDRESS=${handlerAddress}`);
   console.log(`NEXT_PUBLIC_WHALE_SUMMARY_ADDRESS=${summaryAddress}`);
+  console.log(`NEXT_PUBLIC_WHALE_STORM_ADDRESS=${stormAddress}`);
   console.log("\nNext steps:");
-  console.log("1. Fund BOTH contracts with at least 32 STT each for on-chain subscriptions");
+  console.log("1. Fund ALL 3 contracts with at least 32 STT each for on-chain subscriptions");
   console.log("2. Run: npm run subscribe");
 }
 

@@ -16,7 +16,7 @@ import {
   type Log,
 } from "viem";
 import { SDK, type WebsocketSubscriptionInitParams } from "@somnia-chain/reactivity";
-import { somniaTestnet, ERC20_METADATA_ABI, WHALE_HANDLER_ADDRESS, WHALE_HANDLER_ABI } from "./somnia";
+import { somniaTestnet, ERC20_METADATA_ABI, WHALE_HANDLER_ADDRESS, WHALE_HANDLER_ABI, WHALE_STORM_ADDRESS, WHALE_STORM_ABI } from "./somnia";
 
 export type EventType = "transfer" | "mint" | "burn" | "swap";
 
@@ -34,6 +34,7 @@ export interface WhaleTransfer {
 }
 
 const TRANSFER_TOPIC = keccak256(toBytes("Transfer(address,address,uint256)"));
+const WHALE_ALERT_TOPIC = keccak256(toBytes("WhaleAlert(address,address,address,uint256,uint64)"));
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 // Minimum threshold — filter out zero-amount mints/burns, show real transfers
 const WHALE_THRESHOLD = 1n;
@@ -174,7 +175,10 @@ export function useWhaleSubscription() {
   const [totalAlerts, setTotalAlerts] = useState(0);
   const [connectionMethod, setConnectionMethod] = useState<ConnectionMethod>(null);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>("connecting");
+  const [stormCount, setStormCount] = useState(0);
+  const [whaleAlertCount, setWhaleAlertCount] = useState(0);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const cleanupRef2 = useRef<(() => void) | null>(null);
   const didInit = useRef(false);
   const backoffRef = useRef(1000);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

@@ -9,7 +9,9 @@
     "start": "next start",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.ts --network somniaTestnet",
-    "subscribe": "hardhat run scripts/createSubscription.ts --network somniaTestnet"
+    "subscribe": "hardhat run scripts/createSubscription.ts --network somniaTestnet",
+    "deploy-storm": "hardhat run scripts/deployStorm.ts --network somniaTestnet",
+    "subscribe-storm": "hardhat run scripts/subscribeStorm.ts --network somniaTestnet"
   },
   "dependencies": {
     "@somnia-chain/reactivity": "latest",

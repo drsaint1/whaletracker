@@ -132,6 +132,58 @@ export const WHALE_SUMMARY_ABI = [
   },
 ] as const;
 
+export const WHALE_STORM_ADDRESS =
+  (process.env.NEXT_PUBLIC_WHALE_STORM_ADDRESS as `0x${string}`) ??
+  "0x0000000000000000000000000000000000000000";
+
+export const WHALE_STORM_ABI = [
+  {
+    type: "function",
+    name: "stormCount",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "windowVolume",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "windowAlertCount",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "lastStormBlock",
+    inputs: [],
+    outputs: [{ name: "", type: "uint64" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "stormThreshold",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "event",
+    name: "StormDetected",
+    inputs: [
+      { name: "stormIndex", type: "uint256", indexed: true },
+      { name: "windowVolume", type: "uint256", indexed: false },
+      { name: "alertCount", type: "uint256", indexed: false },
+      { name: "blockNumber", type: "uint64", indexed: false },
+    ],
+  },
+] as const;
+
 // Standard ERC-20 ABI for token metadata resolution
 export const ERC20_METADATA_ABI = [
   {
