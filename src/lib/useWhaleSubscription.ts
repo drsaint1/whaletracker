@@ -189,9 +189,9 @@ export function useWhaleSubscription() {
       if (prev.some((t) => t.blockNumber === transfer.blockNumber && t.token === transfer.token && t.from === transfer.from && t.to === transfer.to)) {
         return prev;
       }
+      setTotalAlerts((c) => c + 1);
       return [transfer, ...prev].slice(0, 50);
     });
-    setTotalAlerts((prev) => prev + 1);
   }, []);
 
   const loadRecent = useCallback(async () => {
